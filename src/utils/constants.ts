@@ -1,0 +1,8 @@
+export const GAME_CONSTANTS = {
+    CANVAS_WIDTH: 800,
+    CANVAS_HEIGHT: 600,
+    GRAVITY: 0.5,
+    JUMP_FORCE: -10,
+    PLAYER_SIZE: 30,
+    OBSTACLE_SPEED: 3
+  };
