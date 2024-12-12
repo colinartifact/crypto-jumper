@@ -176,7 +176,7 @@ const Game: React.FC = () => {
         height={GAME_CONSTANTS.CANVAS_HEIGHT}
         onClick={handleJump}
         className="game-canvas"
-        style={{ border: '2px solid black' }}
+        style={{ border: '2px solid white' }}
       />
       {!isPlaying && (
         <button 
