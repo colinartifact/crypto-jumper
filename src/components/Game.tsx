@@ -1,3 +1,4 @@
+'use client';
 import React, { useState, useEffect, useRef } from 'react';
 import { Candlestick } from '../types/game';
 import { checkCollision } from '../utils/collision';
