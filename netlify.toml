@@ -4,7 +4,7 @@
 
 [build.environment]
   NETLIFY_NEXT_PLUGIN_SKIP = "true"
-  NODE_VERSION = "16"
+  NODE_VERSION = "18.17.0"  # Updated to required version
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
