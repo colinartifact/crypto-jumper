@@ -4,13 +4,10 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  reactStrictMode: true,
+  reactStrictMode: false,
   typescript: {
     ignoreBuildErrors: true,
   },
-  experimental: {
-    appDir: true
-  }
 }
 
 module.exports = nextConfig

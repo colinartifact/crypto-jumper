@@ -19,9 +19,6 @@ const GAME_CONSTANTS = {
   SMOOTHING_FACTOR: 0.8   // Controls how gradual height changes are (0-1)
 };
 
-// Add this to track the previous height
-const [prevHeight, setPrevHeight] = useState(GAME_CONSTANTS.MIN_HEIGHT);
-
 const Game: React.FC = () => {
   // State declarations
   const [prevHeight, setPrevHeight] = useState(GAME_CONSTANTS.MIN_HEIGHT);
@@ -167,6 +164,17 @@ function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick
         checkCollision(newPlayerY, GAME_CONSTANTS.PLAYER_SIZE, candlestick)
       );
       
+      // Handle game over conditions first
+      if (collision || newPlayerY < 0 || newPlayerY > GAME_CONSTANTS.CANVAS_HEIGHT - GAME_CONSTANTS.PLAYER_SIZE) {
+        gameOver();
+        return;        
+      }
+      // Place the collision check HERE, after checking for collisions but before candlestick updates
+      if (collision || newPlayerY < 0 || newPlayerY > GAME_CONSTANTS.CANVAS_HEIGHT - GAME_CONSTANTS.PLAYER_SIZE) {
+        gameOver();
+        return;        
+      }
+    
       // Remove offscreen candlesticks and add new ones
       if (updatedCandlesticks[0] && updatedCandlesticks[0].x < -GAME_CONSTANTS.CANDLE_WIDTH) {
         updatedCandlesticks.shift();
@@ -178,12 +186,8 @@ function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick
         const newCandlestick = generateCandlestick(newX, newHeight);
         updatedCandlesticks.push(newCandlestick);
         setPrevHeight(GAME_CONSTANTS.CANVAS_HEIGHT - newCandlestick.high);
-      // Handle game over conditions
-      if (collision || newPlayerY < 0 || newPlayerY > GAME_CONSTANTS.CANVAS_HEIGHT - GAME_CONSTANTS.PLAYER_SIZE) {
-        gameOver();
-        return;        
       }
-      }
+    
       // Update state
       setCandlesticks(updatedCandlesticks);
       setVelocity(newVelocity);
