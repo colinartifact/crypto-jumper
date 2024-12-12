@@ -1,10 +1,20 @@
 [build]
   command = "npm run build"
   publish = "out"
+  base = "."
 
 [build.environment]
-  NETLIFY_NEXT_PLUGIN_SKIP = "true"
-  NODE_VERSION = "18.17.0"  # Updated to required version
+  NODE_VERSION = "18.17.0"
+  NPM_FLAGS = "--legacy-peer-deps"
+  NEXT_TELEMETRY_DISABLED = "1"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
