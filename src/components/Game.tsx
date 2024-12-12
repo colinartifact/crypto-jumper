@@ -200,27 +200,32 @@ function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick
   // Render component
   return (
     <div className="game-container">
-      <canvas
-        ref={canvasRef}
-        width={GAME_CONSTANTS.CANVAS_WIDTH}
-        height={GAME_CONSTANTS.CANVAS_HEIGHT}
-        onClick={handleJump}
-        className="game-canvas"
-        style={{ border: '2px solid white' }}
-      />
-      {!isPlaying && (
-        <button 
-          onClick={startGame}
-          style={{
-            padding: '10px 20px',
-            fontSize: '16px',
-            marginTop: '20px'
-          }}
-        >
-          {score > 0 ? 'Play Again' : 'Start Game'}
-        </button>
-      )}
-    </div>
+    <canvas
+      ref={canvasRef}
+      width={GAME_CONSTANTS.CANVAS_WIDTH}
+      height={GAME_CONSTANTS.CANVAS_HEIGHT}
+      onClick={handleJump}
+      className="game-canvas"
+      style={{ 
+        border: '2px solid white',
+        background: '#000000'  // Ensure black background
+      }}
+    />
+    {!isPlaying && (
+      <button 
+        onClick={startGame}
+        style={{
+          padding: '10px 20px',
+          fontSize: '16px',
+          marginTop: '20px',
+          color: 'white',        // Make button text visible
+          backgroundColor: '#4CAF50'  // Green background for button
+        }}
+      >
+        {score > 0 ? 'Play Again' : 'Start Game'}
+      </button>
+    )}
+  </div>
   );
 };
 
