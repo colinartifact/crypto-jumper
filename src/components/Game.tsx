@@ -162,6 +162,11 @@ function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick
         x: candlestick.x - GAME_CONSTANTS.CANDLE_SPEED  // Slower movement
       }));
     
+      // Check collisions with candlesticks
+      const collision = updatedCandlesticks.some(candlestick => 
+        checkCollision(newPlayerY, GAME_CONSTANTS.PLAYER_SIZE, candlestick)
+      );
+      
       // Remove offscreen candlesticks and add new ones
       if (updatedCandlesticks[0] && updatedCandlesticks[0].x < -GAME_CONSTANTS.CANDLE_WIDTH) {
         updatedCandlesticks.shift();
@@ -173,8 +178,12 @@ function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick
         const newCandlestick = generateCandlestick(newX, newHeight);
         updatedCandlesticks.push(newCandlestick);
         setPrevHeight(GAME_CONSTANTS.CANVAS_HEIGHT - newCandlestick.high);
+      // Handle game over conditions
+      if (collision || newPlayerY < 0 || newPlayerY > GAME_CONSTANTS.CANVAS_HEIGHT - GAME_CONSTANTS.PLAYER_SIZE) {
+        gameOver();
+        return;        
       }
-    
+      }
       // Update state
       setCandlesticks(updatedCandlesticks);
       setVelocity(newVelocity);
