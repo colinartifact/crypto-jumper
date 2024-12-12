@@ -6,8 +6,9 @@
   
   body {
     font-family: Arial, sans-serif;
-    background: #f0f0f0;
+    background: #000000;
   }
+  
   
   .game-container {
     display: flex;
@@ -18,10 +19,10 @@
   }
   
   .game-canvas {
-    border: 2px solid #333;
+    border: 2px solid #ffffff;
     border-radius: 8px;
-    background: white;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    background: black;
+    box-shadow: 0 4px 6px rgba(255, 255, 255, 0.1);
   }
   
   .score {
