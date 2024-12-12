@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Candlestick } from '../types/game';
-import { checkCollision } from '../utils/collision';  // Add this line
+import { checkCollision } from '../utils/collision';
 
 // Game constants
 const GAME_CONSTANTS = {
@@ -19,9 +19,10 @@ const Game: React.FC = () => {
   const [highScore, setHighScore] = useState(0);
   const [playerY, setPlayerY] = useState(300);
   const [velocity, setVelocity] = useState(0);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [candlesticks, setCandlesticks] = useState<Candlestick[]>([]);
-  // Move gameOver function inside the component
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Game state management functions
   const gameOver = () => {
     setIsPlaying(false);
     if (score > highScore) {
@@ -30,41 +31,41 @@ const Game: React.FC = () => {
     }
   };
 
-  // Start game function
   const startGame = () => {
     setIsPlaying(true);
     setScore(0);
     setPlayerY(300);
     setVelocity(0);
 
-  // Initialize candlesticks
-  const initialCandlesticks = Array(10).fill(null).map((_, index) => 
-    generateCandlestick(GAME_CONSTANTS.CANVAS_WIDTH + index * 60)
-  );
-  setCandlesticks(initialCandlesticks);
+    // Initialize candlesticks
+    const initialCandlesticks = Array(10)
+      .fill(null)
+      .map((_, index) => generateCandlestick(GAME_CONSTANTS.CANVAS_WIDTH + index * 60));
+    setCandlesticks(initialCandlesticks);
   };
-// Generate random candlesticks
-const generateCandlestick = (x: number): Candlestick => {
-  const basePrice = Math.random() * 200 + 200; // Base price between 200-400
-  const open = basePrice;
-  const close = basePrice + (Math.random() - 0.5) * 50;
-  const high = Math.max(open, close) + Math.random() * 25;
-  const low = Math.min(open, close) - Math.random() * 25;
-  
-  return { open, high, low, close, x };
-};
-  // Candlestick drawing function
+
+  // Candlestick generation and drawing
+  const generateCandlestick = (x: number): Candlestick => {
+    const basePrice = Math.random() * 200 + 200;  // Base price between 200-400
+    const open = basePrice;
+    const close = basePrice + (Math.random() - 0.5) * 50;
+    const high = Math.max(open, close) + Math.random() * 25;
+    const low = Math.min(open, close) - Math.random() * 25;
+    
+    return { open, high, low, close, x };
+  };
+
   function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick) {
     const candleWidth = 10;
     ctx.strokeStyle = '#ffffff';
     ctx.lineWidth = 2;
-  
+
     // Draw vertical line
     ctx.beginPath();
     ctx.moveTo(candlestick.x, candlestick.high);
     ctx.lineTo(candlestick.x, candlestick.low);
     ctx.stroke();
-  
+
     // Draw candle body
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(
@@ -75,23 +76,24 @@ const generateCandlestick = (x: number): Candlestick => {
     );
   }
 
-  // Jump function
+  // Player controls
   const handleJump = () => {
     if (isPlaying) {
       setVelocity(GAME_CONSTANTS.JUMP_FORCE);
     }
   };
 
-  // Draw game elements
+  // Game rendering
   const drawGame = (ctx: CanvasRenderingContext2D, currentPlayerY: number) => {
     // Clear canvas
     ctx.clearRect(0, 0, GAME_CONSTANTS.CANVAS_WIDTH, GAME_CONSTANTS.CANVAS_HEIGHT);
     
     // Draw candlesticks
-  candlesticks.forEach(candlestick => {
-    drawCandlestick(ctx, candlestick);
-  });
-    // Draw player (red square)
+    candlesticks.forEach(candlestick => {
+      drawCandlestick(ctx, candlestick);
+    });
+
+    // Draw player
     ctx.fillStyle = 'red';
     ctx.fillRect(50, currentPlayerY, GAME_CONSTANTS.PLAYER_SIZE, GAME_CONSTANTS.PLAYER_SIZE);
     
@@ -101,7 +103,7 @@ const generateCandlestick = (x: number): Candlestick => {
     ctx.fillText(`Score: ${score}`, 10, 30);
   };
 
-  // Game loop using useEffect
+  // Game loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -124,43 +126,32 @@ const generateCandlestick = (x: number): Candlestick => {
         x: candlestick.x - 2  // Move candlesticks to the left
       }));
 
-        // Check collisions with candlesticks
-        const collision = updatedCandlesticks.some(candlestick => 
-          checkCollision(newPlayerY, GAME_CONSTANTS.PLAYER_SIZE, candlestick)
-  );
+      // Check collisions
+      const collision = updatedCandlesticks.some(candlestick => 
+        checkCollision(newPlayerY, GAME_CONSTANTS.PLAYER_SIZE, candlestick)
+      );
 
-        if (collision || newPlayerY < 0 || newPlayerY > GAME_CONSTANTS.CANVAS_HEIGHT - GAME_CONSTANTS.PLAYER_SIZE) {
-          gameOver();
-          return;
-  }
-
-        setCandlesticks(updatedCandlesticks);
-        setVelocity(newVelocity);
-        setPlayerY(newPlayerY);
-        setScore(prevScore => prevScore + 1);
-      
-      // Check boundaries
-      if (newPlayerY < 0 || newPlayerY > GAME_CONSTANTS.CANVAS_HEIGHT - GAME_CONSTANTS.PLAYER_SIZE) {
-        gameOver(); // Use gameOver instead of just setIsPlaying(false)
+      // Handle game over conditions
+      if (collision || newPlayerY < 0 || newPlayerY > GAME_CONSTANTS.CANVAS_HEIGHT - GAME_CONSTANTS.PLAYER_SIZE) {
+        gameOver();
         return;
       }
 
+      // Update game state
+      setCandlesticks(updatedCandlesticks);
       setVelocity(newVelocity);
       setPlayerY(newPlayerY);
-      
-      // Remove offscreen candlesticks and add new ones
+      setScore(prevScore => prevScore + 1);
+
+      // Handle candlestick generation
       if (updatedCandlesticks[0].x < -20) {
         updatedCandlesticks.shift();
         const lastCandlestick = updatedCandlesticks[updatedCandlesticks.length - 1];
         updatedCandlesticks.push(generateCandlestick(lastCandlestick.x + 60));
-  }  
-      // Increment score while playing
-      setScore(prevScore => prevScore + 1);
+      }
 
-      // Draw game state
+      // Render frame
       drawGame(ctx, newPlayerY);
-
-
 
       // Continue game loop
       animationFrameId = requestAnimationFrame(gameLoop);
@@ -168,14 +159,15 @@ const generateCandlestick = (x: number): Candlestick => {
 
     gameLoop();
 
-    // Cleanup function
+    // Cleanup
     return () => {
       if (animationFrameId) {
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [isPlaying, playerY, velocity, score, highScore]); // Added highScore to dependencies
+  }, [isPlaying, playerY, velocity, score, highScore, candlesticks]);
 
+  // Render component
   return (
     <div className="game-container">
       <canvas
