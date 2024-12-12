@@ -1,19 +1,18 @@
 'use client';
-import React, { Suspense } from 'react';
-import dynamic from 'next/dynamic';
-
-// Import Game with no SSR
-const Game = dynamic(() => import('../components/Game'), {
-  ssr: false,
-  loading: () => <div>Loading...</div>
-});
+import React from 'react';
+import Game from '../components/Game';
 
 export default function Home() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <div style={{ background: '#000000', minHeight: '100vh' }}>
-        <Game />
-      </div>
-    </Suspense>
+    <div style={{ 
+      width: '100%', 
+      minHeight: '100vh',
+      background: '#000000',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center'
+    }}>
+      <Game />
+    </div>
   );
 }
