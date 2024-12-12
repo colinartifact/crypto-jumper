@@ -23,6 +23,7 @@ const [prevHeight, setPrevHeight] = useState(GAME_CONSTANTS.MIN_HEIGHT);
 
 const Game: React.FC = () => {
   // State declarations
+  const [prevHeight, setPrevHeight] = useState(GAME_CONSTANTS.MIN_HEIGHT);
   const [isPlaying, setIsPlaying] = useState(false);
   const [score, setScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
