@@ -9,10 +9,17 @@ const GAME_CONSTANTS = {
   GRAVITY: 0.5,
   JUMP_FORCE: -10,
   PLAYER_SIZE: 30,
-  CANDLE_WIDTH: 20,     // Added: width of each candlestick
-  CANDLE_SPEED: 2,      // Added: speed of candlestick movement
-  CANDLE_SPACING: 30    // Added: space between candlesticks
+  CANDLE_WIDTH: 20,
+  CANDLE_SPEED: 1,        // Reduced speed
+  CANDLE_SPACING: 25,     // Slightly reduced spacing
+  HEIGHT_VARIATION: 15,   // Smaller variation for smoother changes
+  MAX_HEIGHT: 400,        // Maximum height from bottom
+  MIN_HEIGHT: 150,        // Minimum height from bottom
+  SMOOTHING_FACTOR: 0.8   // Controls how gradual height changes are (0-1)
 };
+
+// Add this to track the previous height
+const [prevHeight, setPrevHeight] = useState(GAME_CONSTANTS.MIN_HEIGHT);
 
 const Game: React.FC = () => {
   // State declarations
@@ -39,49 +46,69 @@ const Game: React.FC = () => {
     setPlayerY(300);
     setVelocity(0);
     
-    // Initialize candlesticks across the screen width
+    let currentHeight = GAME_CONSTANTS.MIN_HEIGHT;
     const numCandlesticks = Math.ceil(GAME_CONSTANTS.CANVAS_WIDTH / GAME_CONSTANTS.CANDLE_SPACING);
-    const initialCandlesticks = Array(numCandlesticks).fill(null).map((_, index) => 
-      generateCandlestick(GAME_CONSTANTS.CANVAS_WIDTH + (index * GAME_CONSTANTS.CANDLE_SPACING))
-    );
+    
+    const initialCandlesticks = Array(numCandlesticks).fill(null).map((_, index) => {
+      const candlestick = generateCandlestick(
+        GAME_CONSTANTS.CANVAS_WIDTH + (index * GAME_CONSTANTS.CANDLE_SPACING),
+        currentHeight
+      );
+      currentHeight = GAME_CONSTANTS.CANVAS_HEIGHT - candlestick.high;  // Store height for next candlestick
+      return candlestick;
+    });
+    
     setCandlesticks(initialCandlesticks);
+    setPrevHeight(currentHeight);
   };
   
 
   // Candlestick generation and drawing
-  const generateCandlestick = (x: number): Candlestick => {
-  const baseHeight = GAME_CONSTANTS.CANVAS_HEIGHT * 0.7; // Base height for candlesticks
-  const variation = Math.random() * 100; // Height variation
+  const generateCandlestick = (x: number, previousHeight: number): Candlestick => {
+    // Calculate new height with smoothing
+    const targetHeight = Math.random() * (GAME_CONSTANTS.MAX_HEIGHT - GAME_CONSTANTS.MIN_HEIGHT) 
+      + GAME_CONSTANTS.MIN_HEIGHT;
+    
+    // Smooth the height change
+    const smoothedHeight = previousHeight + 
+      (targetHeight - previousHeight) * (1 - GAME_CONSTANTS.SMOOTHING_FACTOR);
+    
+    // Ensure height stays within bounds
+    const height = Math.max(
+      GAME_CONSTANTS.MIN_HEIGHT,
+      Math.min(GAME_CONSTANTS.MAX_HEIGHT, smoothedHeight)
+    );
   
-  return {
-    x: x,
-    open: baseHeight - variation,
-    close: baseHeight - variation - (Math.random() * 40),
-    high: baseHeight - variation - 60,
-    low: baseHeight
-  };
+    return {
+      x: x,
+      open: GAME_CONSTANTS.CANVAS_HEIGHT,  // Bottom of playable area
+      close: GAME_CONSTANTS.CANVAS_HEIGHT,  // Bottom of playable area
+      high: GAME_CONSTANTS.CANVAS_HEIGHT - height,  // Height from bottom
+      low: GAME_CONSTANTS.CANVAS_HEIGHT,    // Bottom of playable area
+    };
   };
   // Update drawCandlestick for better visibility
+// Update drawCandlestick function
 function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick) {
   const candleWidth = GAME_CONSTANTS.CANDLE_WIDTH;
   ctx.strokeStyle = '#ffffff';
+  ctx.fillStyle = '#ffffff';
   ctx.lineWidth = 2;
 
-  // Draw vertical line
-  ctx.beginPath();
-  ctx.moveTo(candlestick.x, candlestick.high);
-  ctx.lineTo(candlestick.x, candlestick.low);
-  ctx.stroke();
-
-  // Draw candle body
-  ctx.fillStyle = '#ffffff';
+  // Draw main body (rectangle from bottom)
   ctx.fillRect(
     candlestick.x - candleWidth/2,
-    candlestick.open,
+    candlestick.high,  // Start from the top point
     candleWidth,
-    candlestick.close - candlestick.open
+    GAME_CONSTANTS.CANVAS_HEIGHT - candlestick.high  // Extend to bottom
   );
-  }
+
+  // Draw top wick
+  ctx.beginPath();
+  ctx.moveTo(candlestick.x, candlestick.high - 20);  // Extend wick up 20 pixels
+  ctx.lineTo(candlestick.x, candlestick.high);
+  ctx.stroke();
+}
 
   // Player controls
   const handleJump = () => {
@@ -130,18 +157,20 @@ function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick
       // Update candlesticks
       const updatedCandlesticks = candlesticks.map(candlestick => ({
         ...candlestick,
-        x: candlestick.x - GAME_CONSTANTS.CANDLE_SPEED
+        x: candlestick.x - GAME_CONSTANTS.CANDLE_SPEED  // Slower movement
       }));
     
       // Remove offscreen candlesticks and add new ones
       if (updatedCandlesticks[0] && updatedCandlesticks[0].x < -GAME_CONSTANTS.CANDLE_WIDTH) {
-        // Remove the leftmost candlestick
         updatedCandlesticks.shift();
         
-        // Add a new candlestick at the right
         const lastCandlestick = updatedCandlesticks[updatedCandlesticks.length - 1];
-        const newX = lastCandlestick ? lastCandlestick.x + GAME_CONSTANTS.CANDLE_SPACING : GAME_CONSTANTS.CANVAS_WIDTH;
-        updatedCandlesticks.push(generateCandlestick(newX));
+        const newX = lastCandlestick.x + GAME_CONSTANTS.CANDLE_SPACING;
+        
+        const newHeight = GAME_CONSTANTS.CANVAS_HEIGHT - lastCandlestick.high;
+        const newCandlestick = generateCandlestick(newX, newHeight);
+        updatedCandlesticks.push(newCandlestick);
+        setPrevHeight(GAME_CONSTANTS.CANVAS_HEIGHT - newCandlestick.high);
       }
     
       // Update state
@@ -164,7 +193,7 @@ function drawCandlestick(ctx: CanvasRenderingContext2D, candlestick: Candlestick
         cancelAnimationFrame(animationFrameId);
       }
     };
-  }, [isPlaying, playerY, velocity, score, highScore, candlesticks]);
+  }, [isPlaying, playerY, velocity, score, highScore, candlesticks, prevHeight]);
 
   // Render component
   return (
